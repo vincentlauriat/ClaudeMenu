@@ -364,9 +364,13 @@ struct UsagePanelView: View {
             .disabled(vm.isRefreshing)
             Divider().opacity(0.4).padding(.leading, 46)
             Button { updater.checkForUpdates() } label: {
-                ActionRow(icon: "arrow.down.circle", iconColor: .purple,
-                          title: "Rechercher des mises à jour",
-                          subtitle: "Version \(updater.currentVersion)")
+                ActionRow(icon: updater.pendingVersion == nil ? "arrow.down.circle" : "arrow.down.circle.fill",
+                          iconColor: .purple,
+                          title: updater.pendingVersion.map { "Installer la version \($0)" }
+                              ?? "Rechercher des mises à jour",
+                          subtitle: updater.pendingVersion == nil
+                              ? "Version \(updater.currentVersion)"
+                              : "Vous avez la version \(updater.currentVersion)")
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

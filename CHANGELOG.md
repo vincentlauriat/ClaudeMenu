@@ -14,6 +14,10 @@ First public release, signed with a Developer ID certificate and notarised by Ap
 
 ## [Unreleased]
 
+### Changed
+- Scheduled update checks use Sparkle's gentle reminders: a background find never opens a window and never raises the app, it surfaces an "Installer la version X" row in the panel instead. Sparkle still handles user-initiated checks itself, and the app raises its activation policy for those so the window is reachable.
+
+
 ### Added
 - Menu bar item showing the weekly `all` percentage, and a panel with:
   - a hero card: weekly percentage, reset countdown, segmented bar, pace sentence;

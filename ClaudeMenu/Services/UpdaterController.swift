@@ -15,6 +15,9 @@ final class UpdaterController: ObservableObject {
     /// Mirrors `updater.canCheckForUpdates` so the menu row can disable itself while a
     /// check is already running.
     @Published private(set) var canCheck = true
+    /// Set when a background check finds a version, so the panel can offer it without
+    /// Sparkle stealing focus. Nil when there is nothing waiting.
+    @Published private(set) var pendingVersion: String?
 
     private let controller: SPUStandardUpdaterController
     private let driverDelegate = ActivationPolicyDelegate()
@@ -33,6 +36,9 @@ final class UpdaterController: ObservableObject {
         guard starting else { return }
         controller.updater.automaticallyChecksForUpdates = true
         controller.updater.automaticallyDownloadsUpdates = false
+        driverDelegate.onScheduledUpdateFound = { [weak self] version in
+            Task { @MainActor in self?.pendingVersion = version }
+        }
         observation = controller.updater.observe(\.canCheckForUpdates, options: [.initial, .new]) {
             [weak self] updater, _ in
             Task { @MainActor in self?.canCheck = updater.canCheckForUpdates }
@@ -40,6 +46,7 @@ final class UpdaterController: ObservableObject {
     }
 
     func checkForUpdates() {
+        pendingVersion = nil
         controller.updater.checkForUpdates()
     }
 
@@ -53,6 +60,21 @@ final class UpdaterController: ObservableObject {
 /// and lowers it back afterwards.
 private final class ActivationPolicyDelegate: NSObject, SPUStandardUserDriverDelegate {
     private var raised = false
+    var onScheduledUpdateFound: ((String) -> Void)?
+
+    var supportsGentleScheduledUpdateReminders: Bool { true }
+
+    /// Never let a background check put its window on screen. For a background-running
+    /// app Sparkle would show the alert immediately but behind everything, and raising
+    /// the app to make it reachable would snatch focus from whatever the user is doing.
+    /// The panel offers the update instead, and the user starts it when they choose.
+    /// User-initiated checks are not routed through here: Sparkle always handles those.
+    func standardUserDriverShouldHandleShowingScheduledUpdate(
+        _ update: SUAppcastItem,
+        andInImmediateFocus immediateFocus: Bool
+    ) -> Bool {
+        false
+    }
 
     func standardUserDriverWillShowModalAlert() { raise() }
 
@@ -61,7 +83,12 @@ private final class ActivationPolicyDelegate: NSObject, SPUStandardUserDriverDel
         forUpdate update: SUAppcastItem,
         state: SPUUserUpdateState
     ) {
-        raise()
+        if handleShowingUpdate {
+            // Sparkle is about to show its own window, so the app must be reachable.
+            raise()
+        } else {
+            onScheduledUpdateFound?(update.displayVersionString)
+        }
     }
 
     func standardUserDriverDidReceiveUserAttention(forUpdate update: SUAppcastItem) {}
