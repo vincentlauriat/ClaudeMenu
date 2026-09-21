@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClaudeMenu — Where your Claude usage stands, in the macOS menu bar</title>
+<meta name="description" content="A macOS menu bar app showing Anthropic's own usage gauge — 5-hour and 7-day windows, per model — plus the pace that gets you to the reset, exact token counts read from your Claude Code transcripts, and the savings from RTK and fast-jev-compaction. Free and open source (MIT).">
+<meta property="og:title" content="ClaudeMenu">
+<meta property="og:description" content="Anthropic's own usage gauge in your menu bar, plus the one number it never gives you: whether today's pace makes it to the reset.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vincentlauriat.github.io/ClaudeMenu/">
+<meta property="og:image" content="https://vincentlauriat.github.io/ClaudeMenu/panel.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0a0c12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2330d158'/%3E%3Cpath d='M22 62 a28 28 0 0 1 56 0' stroke='%2308090d' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3Cpath d='M50 62 L66 40' stroke='%2308090d' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="assets/base.css">
+<style>
+  :root{ --accent:#30d158; --accent-soft:rgba(48,209,88,.14); --maxw:1080px; }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  nav{position:sticky;top:0;z-index:var(--z-nav);background:rgba(10,12,18,.82);
+      backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line-soft)}
+  nav .wrap{display:flex;align-items:center;gap:18px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .logo{width:26px;height:26px;border-radius:8px;background:var(--accent);color:var(--on-accent);
+        display:grid;place-items:center;font-size:13px;font-weight:800;font-family:var(--font-mono)}
+  .nav-links{display:flex;gap:18px;margin-left:auto;align-items:center;color:var(--muted);font-size:14px}
+  .nav-links a:hover{color:var(--txt)}
+  .langtog{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .langtog button{background:none;border:0;color:var(--muted);font:600 11px/1 var(--font-mono);
+                  padding:7px 9px;cursor:pointer}
+  .langtog button.on{background:var(--accent);color:var(--on-accent)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:11px 20px;
+       font-weight:600;font-size:14px;border:1px solid transparent;transition:.15s}
+  .btn-primary{background:var(--accent);color:var(--on-accent)}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{border-color:var(--line);color:var(--txt)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-sm{padding:8px 14px;font-size:13px}
+
+  header{padding:64px 0 32px;border-bottom:1px solid var(--line-soft)}
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:7px;font:600 12px/1 var(--font-mono);
+        color:var(--accent);background:var(--accent-soft);border:1px solid rgba(48,209,88,.3);
+        border-radius:999px;padding:7px 13px;margin-bottom:18px}
+  h1{font-size:clamp(32px,4.6vw,50px);line-height:1.08;letter-spacing:-.025em;margin:0 0 16px}
+  .grad{background:linear-gradient(100deg,var(--accent),#7ce0ff);-webkit-background-clip:text;
+        background-clip:text;color:transparent}
+  .sub{color:var(--muted);font-size:17px;line-height:1.6;margin:0 0 24px;max-width:56ch}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .meta{color:var(--faint);font-size:13px;font-family:var(--font-mono)}
+  .shot{margin:0;text-align:center}
+  .shot img{width:100%;max-width:330px;border-radius:18px;border:1px solid var(--line);
+            box-shadow:0 30px 70px rgba(0,0,0,.55)}
+  .shot figcaption{color:var(--faint);font-size:12px;font-family:var(--font-mono);margin-top:12px}
+
+  section{padding:64px 0;border-bottom:1px solid var(--line-soft)}
+  h2{font-size:clamp(24px,3vw,33px);letter-spacing:-.02em;margin:0 0 10px}
+  .lead{color:var(--muted);font-size:16px;line-height:1.65;max-width:68ch;margin:0 0 32px}
+  .eyebrow{font:600 11px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;
+           color:var(--accent);margin:0 0 12px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:var(--gap)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .card h3{font-size:16px;margin:0 0 8px;letter-spacing:-.01em}
+  .card p{color:var(--muted);font-size:14px;line-height:1.6;margin:0}
+  .ico{width:34px;height:34px;border-radius:10px;background:var(--accent-soft);color:var(--accent);
+       display:grid;place-items:center;margin-bottom:14px;font-size:17px}
+
+  .readout{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+           padding:22px 24px;font-family:var(--font-mono);font-size:13.5px;line-height:1.85;
+           color:var(--muted);overflow-x:auto}
+  .readout b{color:var(--accent);font-size:26px;font-weight:700;display:block;line-height:1.2;margin-bottom:6px}
+  .readout .dim{color:var(--faint)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  th{color:var(--faint);font:600 11px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase}
+  td:first-child{color:var(--txt);font-weight:600;white-space:nowrap}
+  td{color:var(--muted);line-height:1.6}
+
+  pre{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+      padding:18px 20px;overflow-x:auto;font-size:13px;line-height:1.7;color:var(--txt)}
+  pre .c{color:var(--faint)}
+  pre .g{color:var(--accent)}
+
+  .note{display:flex;gap:12px;background:var(--surface-2);border:1px solid var(--line);
+        border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:16px 18px;
+        color:var(--muted);font-size:14px;line-height:1.6;margin-top:24px}
+
+  footer{padding:36px 0 56px;color:var(--faint);font-size:13px;text-align:center}
+  footer a{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+  footer a:hover{color:var(--accent)}
+
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr;gap:34px}
+    .nav-links a:not(.btn){display:none}
+    header{padding:44px 0 26px}
+    section{padding:48px 0}
+  }
+</style>
+</head>
+<body class="lang-en">
+
+<a class="skip" href="#top"><span class="en">Skip to content</span><span class="fr">Aller au contenu</span><span class="zh">跳至內容</span></a>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="logo">CM</span>ClaudeMenu</a>
+  <div class="nav-links">
+    <a href="#what"><span class="en">What it shows</span><span class="fr">Ce qu'il montre</span><span class="zh">顯示內容</span></a>
+    <a href="#data"><span class="en">Data</span><span class="fr">Données</span><span class="zh">資料</span></a>
+    <a href="#install"><span class="en">Install</span><span class="fr">Installer</span><span class="zh">安裝</span></a>
+    <div class="langtog" role="group" aria-label="Language / Langue / 語言">
+      <button type="button" data-lang="en" class="on" aria-pressed="true" onclick="setLang('en')">EN</button>
+      <button type="button" data-lang="fr" aria-pressed="false" onclick="setLang('fr')">FR</button>
+      <button type="button" data-lang="zh" aria-pressed="false" onclick="setLang('zh')">中文</button>
+    </div>
+    <a class="btn btn-primary btn-sm" href="https://github.com/vincentlauriat/ClaudeMenu">GitHub</a>
+  </div>
+</div></nav>
+
+<header id="top"><div class="wrap">
+  <div class="hero">
+    <div>
+      <span class="pill">◷ <span class="en">macOS menu bar · MIT</span><span class="fr">Barre de menus macOS · MIT</span><span class="zh">macOS 選單列 · MIT</span></span>
+      <h1>
+        <span class="en">Your Claude quota,<br><span class="grad">and whether today's pace makes it.</span></span>
+        <span class="fr">Votre quota Claude,<br><span class="grad">et si le rythme du jour tiendra.</span></span>
+        <span class="zh">你的 Claude 配額，<br><span class="grad">以及今天的節奏能否撐到重置。</span></span>
+      </h1>
+      <p class="sub">
+        <span class="en">Anthropic tells you how much of the week is gone. ClaudeMenu tells you where it lands at the current pace, what today's fair share is, and exactly how many tokens you actually spent — counted from your own Claude Code transcripts.</span>
+        <span class="fr">Anthropic vous dit quelle part de la semaine est consommée. ClaudeMenu vous dit où elle atterrit au rythme actuel, quelle est la part du jour, et combien de tokens vous avez réellement dépensés — comptés sur vos propres transcripts Claude Code.</span>
+        <span class="zh">Anthropic 告訴你這週用掉了多少。ClaudeMenu 告訴你依目前節奏會落在哪裡、今天該用多少，以及你實際花了多少 token——直接從你自己的 Claude Code 記錄中計算。</span>
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/vincentlauriat/ClaudeMenu"><span class="en">View on GitHub</span><span class="fr">Voir sur GitHub</span><span class="zh">在 GitHub 上檢視</span></a>
+        <a class="btn btn-ghost" href="#install"><span class="en">Build from source</span><span class="fr">Compiler depuis les sources</span><span class="zh">從原始碼建置</span></a>
+      </div>
+      <p class="meta">
+        <span class="en">Free &amp; open source (MIT) · macOS 14+ · No release yet, build it yourself</span>
+        <span class="fr">Gratuit et open source (MIT) · macOS 14+ · Pas encore de release, à compiler</span>
+        <span class="zh">免費開源（MIT） · macOS 14+ · 尚無發行版，請自行建置</span>
+      </p>
+    </div>
+    <figure class="shot">
+      <img src="panel.png" alt="The ClaudeMenu panel: weekly quota at 17 %, daily budget, per-model Anthropic limits, token counts and tool savings">
+      <figcaption>
+        <span class="en">The panel, in French — the interface language today.</span>
+        <span class="fr">Le panneau, en français — la langue de l'interface aujourd'hui.</span>
+        <span class="zh">面板目前僅有法文介面。</span>
+      </figcaption>
+    </figure>
+  </div>
+</div></header>
+
+<section id="what"><div class="wrap">
+  <p class="eyebrow"><span class="en">What it shows</span><span class="fr">Ce qu'il montre</span><span class="zh">顯示內容</span></p>
+  <h2><span class="en">Four readings, one glance</span><span class="fr">Quatre relevés, un coup d'œil</span><span class="zh">四項讀數，一眼看完</span></h2>
+  <p class="lead">
+    <span class="en">The menu bar carries the weekly percentage. Open it and every number that matters is one scroll away.</span>
+    <span class="fr">La barre de menus porte le pourcentage hebdomadaire. Ouvrez-le et tous les chiffres utiles tiennent en un défilement.</span>
+    <span class="zh">選單列顯示每週百分比。點開後，所有重要數字一捲即見。</span>
+  </p>
+
+  <div class="readout">
+    <b>17 %</b>
+    <span class="en">Weekly quota consumed · resets in 4 d 2 h<br>
+    <span class="dim">At this rate the week ends at 41 % — there is enough room.</span></span>
+    <span class="fr">Quota hebdomadaire consommé · réinitialisation dans 4 j 2 h<br>
+    <span class="dim">À ce rythme, la semaine finira à 41 % — la marge est suffisante.</span></span>
+    <span class="zh">本週配額已使用 · 4 天 2 小時後重置<br>
+    <span class="dim">依此節奏，本週將結束於 41 %——餘裕充足。</span></span>
+  </div>
+
+  <div class="grid" style="margin-top:28px">
+    <div class="card">
+      <div class="ico">◷</div>
+      <h3><span class="en">The pace, not just the level</span><span class="fr">Le rythme, pas seulement le niveau</span><span class="zh">節奏，而不只是水位</span></h3>
+      <p><span class="en">Where the week lands if nothing changes, and the daily budget that keeps an even pace to the reset. A window that just opened says so instead of extrapolating: 12 % three minutes in is not a 254 %/h habit.</span>
+      <span class="fr">Où la semaine atterrit si rien ne change, et le budget quotidien qui tient un rythme régulier jusqu'à la réinitialisation. Une fenêtre à peine ouverte le dit au lieu d'extrapoler : 12 % au bout de trois minutes n'est pas une habitude à 254 %/h.</span>
+      <span class="zh">若一切不變，本週將落在哪裡；以及維持穩定節奏所需的每日預算。剛開啟的視窗會直說，而不會外推：三分鐘內的 12 % 並不代表每小時 254 %。</span></p>
+    </div>
+    <div class="card">
+      <div class="ico">▤</div>
+      <h3><span class="en">Every Anthropic meter</span><span class="fr">Toutes les jauges Anthropic</span><span class="zh">每一項 Anthropic 計量</span></h3>
+      <p><span class="en">The 5-hour session, the 7-day quota, and one row per model-specific weekly limit — each with its reset time, its current rate in %/h and the sustainable rate that would land exactly on the limit.</span>
+      <span class="fr">La session de 5 h, le quota de 7 jours, et une ligne par limite hebdomadaire propre à un modèle — chacune avec son heure de réinitialisation, son rythme actuel en %/h et le rythme tenable qui atterrirait pile sur la limite.</span>
+      <span class="zh">5 小時工作階段、7 天配額，以及每個模型專屬的每週限制各一列——各自標示重置時間、目前每小時百分比，以及剛好落在上限的可持續速率。</span></p>
+    </div>
+    <div class="card">
+      <div class="ico">Σ</div>
+      <h3><span class="en">Exact token counts</span><span class="fr">Comptage exact des tokens</span><span class="zh">精確的 token 計數</span></h3>
+      <p><span class="en">Percentages hide what you actually spent. Replies, output tokens and context tokens read, for today and the week, with per-reply averages — counted from your transcripts, not estimated.</span>
+      <span class="fr">Les pourcentages masquent la dépense réelle. Réponses, tokens écrits et tokens de contexte lus, pour aujourd'hui et la semaine, avec les moyennes par réponse — comptés sur vos transcripts, pas estimés.</span>
+      <span class="zh">百分比掩蓋了實際花費。今日與本週的回覆數、輸出 token 與讀取的脈絡 token，並附每則平均——直接計算自你的記錄，而非估算。</span></p>
+    </div>
+    <div class="card">
+      <div class="ico">✂</div>
+      <h3><span class="en">What your tools saved</span><span class="fr">Ce que vos outils ont économisé</span><span class="zh">你的工具省下了多少</span></h3>
+      <p><span class="en">If RTK is installed, the tokens it avoided today, this week and since install. If fast-jev-compaction is installed, how much context each compaction pruned while keeping the rest verbatim. Nothing shows otherwise.</span>
+      <span class="fr">Si RTK est installé, les tokens évités aujourd'hui, cette semaine et depuis l'installation. Si fast-jev-compaction est installé, le contexte élagué à chaque compaction, le reste étant gardé mot pour mot. Rien ne s'affiche sinon.</span>
+      <span class="zh">若已安裝 RTK，顯示今日、本週與自安裝以來省下的 token。若已安裝 fast-jev-compaction，顯示每次壓縮修剪掉多少脈絡，其餘逐字保留。未安裝則不顯示。</span></p>
+    </div>
+  </div>
+</div></section>
+
+<section id="data"><div class="wrap">
+  <p class="eyebrow"><span class="en">Where the data comes from</span><span class="fr">D'où viennent les données</span><span class="zh">資料來源</span></p>
+  <h2><span class="en">Anthropic's own gauge, and your own transcripts</span><span class="fr">La jauge d'Anthropic, et vos propres transcripts</span><span class="zh">Anthropic 的官方計量，以及你自己的記錄</span></h2>
+  <p class="lead">
+    <span class="en">Nothing is estimated or reconstructed. The percentages come from the endpoint Claude Code itself reads, so they match <code>/usage</code> exactly.</span>
+    <span class="fr">Rien n'est estimé ni reconstruit. Les pourcentages viennent de l'endpoint que Claude Code lit lui-même : ils correspondent exactement à <code>/usage</code>.</span>
+    <span class="zh">沒有任何估算或重建。百分比來自 Claude Code 自己讀取的端點，因此與 <code>/usage</code> 完全一致。</span>
+  </p>
+
+<pre><span class="c">GET</span> https://api.anthropic.com/api/oauth/usage
+<span class="c">Authorization:</span> Bearer <span class="g">&lt;token from the login keychain&gt;</span>
+<span class="c">anthropic-beta:</span> oauth-2025-04-20</pre>
+
+  <table style="margin-top:28px">
+    <tr>
+      <th><span class="en">Concern</span><span class="fr">Question</span><span class="zh">項目</span></th>
+      <th><span class="en">How ClaudeMenu handles it</span><span class="fr">Comment ClaudeMenu la traite</span><span class="zh">ClaudeMenu 的處理方式</span></th>
+    </tr>
+    <tr>
+      <td><span class="en">The token</span><span class="fr">Le jeton</span><span class="zh">權杖</span></td>
+      <td><span class="en">Read from the <code>Claude Code-credentials</code> keychain item through <code>/usr/bin/security</code> — the same tool that wrote it, so macOS raises no second prompt. Kept in memory for the request, never written anywhere, never refreshed (that would race Claude Code).</span>
+      <span class="fr">Lu dans l'entrée de trousseau <code>Claude Code-credentials</code> via <code>/usr/bin/security</code> — l'outil même qui l'a écrite, donc pas de seconde invite macOS. Gardé en mémoire le temps de la requête, jamais écrit nulle part, jamais renouvelé (cela entrerait en concurrence avec Claude Code).</span>
+      <span class="zh">透過 <code>/usr/bin/security</code> 從 <code>Claude Code-credentials</code> 鑰匙圈項目讀取——正是寫入它的同一個工具，因此 macOS 不會再次提示。僅在請求期間存於記憶體，不寫入任何位置，也不更新（以免與 Claude Code 衝突）。</span></td>
+    </tr>
+    <tr>
+      <td><span class="en">Rate limits</span><span class="fr">Limites d'appel</span><span class="zh">速率限制</span></td>
+      <td><span class="en">The endpoint rate-limits hard, so the gauge is called at most every three minutes, with exponential backoff to fifteen minutes after a 429. The last good reading stays on screen.</span>
+      <span class="fr">L'endpoint limite fortement les lectures : la jauge est appelée au plus toutes les trois minutes, avec un backoff exponentiel jusqu'à quinze minutes après un 429. Le dernier relevé valide reste affiché.</span>
+      <span class="zh">該端點限制嚴格，因此最多每三分鐘讀取一次，收到 429 後以指數退避至十五分鐘。畫面持續顯示最後一次有效讀數。</span></td>
+    </tr>
+    <tr>
+      <td><span class="en">Token counts</span><span class="fr">Comptage des tokens</span><span class="zh">Token 計數</span></td>
+      <td><span class="en">Read incrementally from <code>~/.claude/projects/**/*.jsonl</code>, from the byte offset reached last time. An assistant message spans several JSONL lines repeating the same usage object, so they are de-duplicated by message id.</span>
+      <span class="fr">Lus de façon incrémentale depuis <code>~/.claude/projects/**/*.jsonl</code>, à partir de l'offset atteint la fois précédente. Un message assistant s'étale sur plusieurs lignes JSONL répétant le même objet d'usage : elles sont dédoublonnées par identifiant de message.</span>
+      <span class="zh">從 <code>~/.claude/projects/**/*.jsonl</code> 依上次讀取的位移增量讀取。一則助理訊息會橫跨多行 JSONL 並重複相同的用量物件，因此依訊息 id 去除重複。</span></td>
+    </tr>
+    <tr>
+      <td><span class="en">Privacy</span><span class="fr">Vie privée</span><span class="zh">隱私</span></td>
+      <td><span class="en">Everything stays on your Mac. The only network call is the one above, to Anthropic, with your own token. No telemetry, no analytics, no third party. Transcripts are read, never sent.</span>
+      <span class="fr">Tout reste sur votre Mac. Le seul appel réseau est celui ci-dessus, vers Anthropic, avec votre propre jeton. Aucune télémétrie, aucune analytique, aucun tiers. Les transcripts sont lus, jamais envoyés.</span>
+      <span class="zh">一切留在你的 Mac 上。唯一的網路請求就是上述這一個，送往 Anthropic，使用你自己的權杖。沒有遙測、沒有分析、沒有第三方。記錄只被讀取，絕不外傳。</span></td>
+    </tr>
+  </table>
+</div></section>
+
+<section id="install"><div class="wrap">
+  <p class="eyebrow"><span class="en">Install</span><span class="fr">Installation</span><span class="zh">安裝</span></p>
+  <h2><span class="en">Build it from source</span><span class="fr">Compilez depuis les sources</span><span class="zh">從原始碼建置</span></h2>
+  <p class="lead">
+    <span class="en">There is no tagged release yet, so there is nothing to download. Three commands and it runs.</span>
+    <span class="fr">Il n'y a pas encore de release, donc rien à télécharger. Trois commandes et l'app tourne.</span>
+    <span class="zh">目前尚無發行版，因此沒有可下載的檔案。三道指令即可執行。</span>
+  </p>
+
+<pre>brew install xcodegen
+git clone https://github.com/vincentlauriat/ClaudeMenu.git
+<span class="c">cd</span> ClaudeMenu &amp;&amp; xcodegen generate
+
+xcodebuild -project ClaudeMenu.xcodeproj -scheme ClaudeMenu \
+  -configuration Debug -derivedDataPath build \
+  CODE_SIGNING_ALLOWED=NO build
+
+<span class="c">open</span> build/Build/Products/Debug/ClaudeMenu.app</pre>
+
+  <div class="note">
+    <span>
+      <span class="en"><b>Requirements.</b> macOS 14 or later, Xcode 15 or later, and Claude Code signed in. The gauge needs a Pro or Max subscription; without one the token counts still work. The app has no Dock icon — look for the percentage in the menu bar, and check behind the collapse chevron if your menu bar is full.</span>
+      <span class="fr"><b>Prérequis.</b> macOS 14 ou ultérieur, Xcode 15 ou ultérieur, et Claude Code connecté. La jauge demande un abonnement Pro ou Max ; sans lui, le comptage des tokens fonctionne quand même. L'app n'a pas d'icône dans le Dock — cherchez le pourcentage dans la barre de menus, et regardez derrière le chevron de repli si elle est pleine.</span>
+      <span class="zh"><b>需求。</b>macOS 14 以上、Xcode 15 以上，並已登入 Claude Code。計量需要 Pro 或 Max 訂閱；沒有訂閱時 token 計數仍可運作。本程式不會出現在 Dock——請在選單列尋找百分比；若選單列已滿，請檢查收合箭號後方。</span>
+    </span>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  ClaudeMenu · <span class="en">MIT License</span><span class="fr">Licence MIT</span><span class="zh">MIT 授權</span> · © 2026 Vincent Lauriat ·
+  <a href="https://github.com/vincentlauriat/ClaudeMenu">github.com/vincentlauriat/ClaudeMenu</a>
+  · <a href="https://lauriat.fr/outils/claudemenu/">lauriat.fr</a>
+  · <a href="https://vincentlauriat.github.io/">vincentlauriat.github.io</a>
+</div></footer>
+
+<script>
+  var LANG_TAG={en:'en',fr:'fr',zh:'zh-Hant'};
+  function setLang(l){
+    if(!LANG_TAG[l]) l='en';
+    document.body.classList.remove('lang-en','lang-fr','lang-zh');
+    document.body.classList.add('lang-'+l);
+    document.documentElement.lang=LANG_TAG[l];
+    document.querySelectorAll('.langtog button').forEach(function(b){
+      var on=b.dataset.lang===l;
+      b.classList.toggle('on',on);
+      b.setAttribute('aria-pressed',on?'true':'false');
+    });
+    try{localStorage.setItem('vl-lang',l)}catch(e){}
+  }
+  (function(){
+    var saved;try{saved=localStorage.getItem('vl-lang')}catch(e){}
+    var n=(navigator.language||'en').slice(0,2).toLowerCase();
+    setLang(saved||(n==='zh'?'zh':(n==='fr'?'fr':'en')));
+  })();
+</script>
+</body>
+</html>
