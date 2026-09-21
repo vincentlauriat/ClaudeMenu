@@ -116,7 +116,8 @@ sent anywhere.
 
 ## Install
 
-There is **no tagged release yet**. Build it from source:
+Download the signed, notarised [v1.0.0 disk image](https://github.com/vincentlauriat/ClaudeMenu/releases/download/v1.0.0/ClaudeMenu-1.0.0.dmg),
+drag the app to Applications, and it updates itself from then on. Or build it from source:
 
 ```bash
 brew install xcodegen
@@ -215,7 +216,7 @@ staples it.
 
 ## Known gaps
 
-- No tagged release and no signed DMG yet.
+- The app icon is still the generated placeholder.
 - The app icon is a generated placeholder.
 - The interface is French only.
 - The panel reads Anthropic's gauge; it cannot show usage for an account you are not signed
