@@ -32,7 +32,7 @@
 | `RTKGain` | Cherche `rtk` dans les préfixes connus, lance `gain -d -f json`, agrège les lignes journalières en aujourd'hui / semaine / total | Tâche détachée en priorité utilitaire ; le bloc se masque si `rtk` est absent. RTK ne fournit que des totaux journaliers : une fenêtre hebdo commençant en milieu de journée compte ce jour entier |
 | `JevDetector` + scanner | Détecte `~/.claude/plugins/cache/fast-jev-compaction` ; le scanner parse les notices `type: system` `fast-jev-compaction: kept K/M messages … (P% reduction …)` et `fallback to built-in summary` | Dédoublonnage par horodatage + texte (le hook journalise et affiche la même ligne) ; les lignes `decisions:` sont ignorées |
 | `UsageMath` / `PaceProjection` | % d'atterrissage, %/h nécessaire vs courant, part journalière égale | Début de fenêtre = `resets_at − windowHours`. `isMeaningful` refuse toute projection avant 30 minutes et 5 % de fenêtre écoulés |
-| `UsageViewModel` | Orchestre le rafraîchissement, expose l'état, lancement au démarrage (`SMAppService`) | Une seule instance. Les tokens sont recomptés toutes les 60 s ; la jauge est appelée au plus toutes les 3 minutes, avec backoff exponentiel jusqu'à 15 minutes après un 429, en conservant le dernier relevé valide |
+| `UsageViewModel` | Orchestre le rafraîchissement, expose l'état, lancement au démarrage (`SMAppService`) | Une seule instance. Les minuteurs tournent en mode `.common` du run loop, sans quoi ils s'arrêtent pendant que le popover est ouvert. Les tokens sont recomptés toutes les 60 s ; la jauge est appelée au plus toutes les 3 minutes, avec backoff exponentiel jusqu'à 15 minutes après un 429, en conservant le dernier relevé valide |
 | `UsagePanelView` | Le panneau, 340 pt de large, hauteur selon les sections ouvertes | En-tête (% hebdo, compte à rebours, barre segmentée, phrase de rythme), carte budget, trois sections `DisclosureCard` (limites Anthropic par modèle, tokens consommés, économies des outils), carte réglages (actualiser / lancer au démarrage / quitter) |
 | `Theme` + `DisclosureCard` / `InfoRow` / `ActionRow` / `SegmentedBar` | Briques de style Juicy | `DisclosureCard` est nommé ainsi pour ne jamais masquer `SwiftUI.Section` ; l'état ouvert/fermé est persisté via `@AppStorage` |
 
@@ -69,6 +69,7 @@
 | `CLAUDEMENU_SNAPSHOT_DARK=1` | Rend cette capture en mode sombre |
 | `CLAUDEMENU_MEASURE=1` | Affiche la taille que le popover demanderait, puis quitte. Seule vérification fiable de la hauteur du panneau |
 | `CLAUDEMENU_MEASURE_PLAIN=1` | Avec la précédente, mesure le contenu sans son conteneur défilant |
+| `CLAUDEMENU_TIMERTEST=1` | Déclenche un minuteur planifié et celui de l'app dans chaque mode du run loop, affiche les compteurs puis quitte |
 
 ## Build & release
 

@@ -63,7 +63,12 @@ struct UsagePanelView: View {
             ScrollView(.vertical) { content }
                 .scrollBounceBehavior(.basedOnSize)
                 .frame(width: Theme.panelWidth, height: resolvedHeight)
-                .onAppear { remeasure() }
+                .onAppear {
+                    remeasure()
+                    // Opening the panel is a request to see current numbers; the gauge
+                    // interval and the backoff still decide whether Anthropic is called.
+                    Task { await vm.refresh() }
+                }
                 .onChange(of: layoutSignature) { _ in remeasure() }
         } else {
             content.frame(width: Theme.panelWidth)
@@ -395,10 +400,22 @@ struct UsagePanelView: View {
 /// asks for. Used to give the scroll view a concrete height without a measurement loop.
 @MainActor
 enum PanelSizer {
+    /// The controller has to live in a window: outside one, `preferredContentSize` comes back
+    /// larger than what the popover would use (640 instead of 559 on the default panel).
+    private static let host: NSWindow = {
+        let window = NSWindow(contentRect: NSRect(x: -10_000, y: -10_000, width: 10, height: 10),
+                              styleMask: [.borderless], backing: .buffered, defer: false)
+        window.isExcludedFromWindowsMenu = true
+        return window
+    }()
+
     static func naturalHeight(of view: some View) -> CGFloat {
         let controller = NSHostingController(rootView: view)
         controller.sizingOptions = [.preferredContentSize]
+        host.contentViewController = controller
         controller.view.layoutSubtreeIfNeeded()
-        return controller.preferredContentSize.height
+        let height = controller.preferredContentSize.height
+        host.contentViewController = nil
+        return height
     }
 }

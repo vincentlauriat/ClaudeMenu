@@ -22,6 +22,7 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   `CLAUDEMENU_SNAPSHOT=<path.png>` renders it off screen to a PNG without reading the screen.
 
 ### Fixed
+- The figures no longer freeze while the panel is open: the refresh timers ran in the run loop's default mode, which is suspended while a menu bar popover tracks events. Opening the panel now also refreshes it.
 - The panel no longer fails to open: the scroll view added to cap its height left the menu bar window 10 points tall. It now receives a concrete height and adapts to the open sections, capped so it always fits under the menu bar.
 
 ### Notes

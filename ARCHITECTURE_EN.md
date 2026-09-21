@@ -32,7 +32,7 @@
 | `RTKGain` | Probes known prefixes for `rtk`, runs `gain -d -f json`, folds the daily rows into today / week / all time | Runs detached at utility priority; the block hides when `rtk` is absent. RTK only reports whole days, so a weekly window starting mid-day counts that whole day |
 | `JevDetector` + scanner | Detects `~/.claude/plugins/cache/fast-jev-compaction`; the scanner parses `type: system` notices `fast-jev-compaction: kept K/M messages … (P% reduction …)` and `fallback to built-in summary` | De-duplicated by timestamp + text (the hook logs and toasts the same line); `decisions:` lines are ignored |
 | `UsageMath` / `PaceProjection` | Landing %, needed vs. running %/h, even daily share | Window start = `resets_at − windowHours`. `isMeaningful` refuses to project before 30 minutes and 5% of the window have elapsed |
-| `UsageViewModel` | Orchestrates refresh, exposes state, launch at login (`SMAppService`) | One instance only. Tokens recount every 60 s; the gauge is called at most every 3 minutes, with exponential backoff to 15 minutes after a 429, keeping the last good reading |
+| `UsageViewModel` | Orchestrates refresh, exposes state, launch at login (`SMAppService`) | One instance only. Timers run in the run loop's `.common` mode, without which they stop while the popover is open. Tokens recount every 60 s; the gauge is called at most every 3 minutes, with exponential backoff to 15 minutes after a 429, keeping the last good reading |
 | `UsagePanelView` | The panel, 340pt wide, height following the open sections | Hero (weekly %, reset countdown, segmented bar, pace sentence), budget card, three `DisclosureCard` sections (Anthropic limits per model, tokens consumed, tool savings), settings card (refresh / launch at login / quit) |
 | `Theme` + `DisclosureCard` / `InfoRow` / `ActionRow` / `SegmentedBar` | Juicy-like building blocks | `DisclosureCard` is named so it never shadows `SwiftUI.Section`; open/closed state persists through `@AppStorage` |
 
@@ -67,6 +67,7 @@
 | `CLAUDEMENU_SNAPSHOT_DARK=1` | Renders that snapshot in dark mode |
 | `CLAUDEMENU_MEASURE=1` | Prints the size the popover would ask for, then quits. The only reliable check of the panel's height |
 | `CLAUDEMENU_MEASURE_PLAIN=1` | With the above, measures the content without its scroll container |
+| `CLAUDEMENU_TIMERTEST=1` | Fires a scheduled timer and the app's own timer in each run loop mode and reports the counts, then quits |
 
 ## Build & release
 

@@ -158,6 +158,10 @@ CLAUDEMENU_SNAPSHOT_DARK=1 CLAUDEMENU_SNAPSHOT=/tmp/panel-dark.png \
 ```bash
 # The size the popover would ask for, in the current section state
 CLAUDEMENU_MEASURE=1 build/Build/Products/Debug/ClaudeMenu.app/Contents/MacOS/ClaudeMenu
+
+# Which timers keep firing while the run loop tracks events, the mode an open popover
+# puts the app in. A scheduled timer fires 0 times there; the app's own timer keeps going.
+CLAUDEMENU_TIMERTEST=1 build/Build/Products/Debug/ClaudeMenu.app/Contents/MacOS/ClaudeMenu
 ```
 
 `ImageRenderer` does not lay out a `ScrollView`, so the snapshot mode renders the same content

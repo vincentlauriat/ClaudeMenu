@@ -34,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let env = ProcessInfo.processInfo.environment
+        if env["CLAUDEMENU_TIMERTEST"] == "1" { timerTest(); return }
         if env["CLAUDEMENU_MEASURE"] == "1" {
             let model = UsageViewModel()
             debugModel = model
@@ -65,6 +66,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         debugWindow = window
+    }
+
+    /// Diagnostic: which timers keep firing while the run loop tracks events, the mode an
+    /// open `MenuBarExtra` popover puts the app in. Run with `CLAUDEMENU_TIMERTEST=1`.
+    private func timerTest() {
+        var scheduled = 0, production = 0
+        // `t1` is the pattern this app used to use; `t2` is the helper it uses now, so the
+        // test exercises the production code path rather than a copy of it.
+        let t1 = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { _ in scheduled += 1 }
+        let t2 = UsageViewModel.repeatingTimer(every: 0.2) { production += 1 }
+        let tracking = RunLoop.Mode(rawValue: "NSEventTrackingRunLoopMode")
+
+        func spin(_ mode: RunLoop.Mode, _ label: String) {
+            scheduled = 0; production = 0
+            let deadline = Date().addingTimeInterval(2)
+            while Date() < deadline {
+                RunLoop.main.run(mode: mode, before: Date().addingTimeInterval(0.05))
+            }
+            FileHandle.standardError.write(Data(
+                "2s in \(label): scheduledTimer fired \(scheduled)x, app timer fired \(production)x\n".utf8))
+        }
+        spin(.default, ".default")
+        spin(tracking, ".eventTracking")
+        t1.invalidate(); t2.invalidate()
+        NSApplication.shared.terminate(nil)
     }
 
     /// Reports the size the panel asks for, the way a popover asks for it.

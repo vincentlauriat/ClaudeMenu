@@ -32,13 +32,27 @@ final class UsageViewModel: ObservableObject {
     private var backoff: TimeInterval = 0
 
     init() {
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: Self.refreshInterval, repeats: true) { [weak self] _ in
+        refreshTimer = Self.repeatingTimer(every: Self.refreshInterval) { [weak self] in
             Task { @MainActor in await self?.refresh() }
         }
-        clockTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        clockTimer = Self.repeatingTimer(every: 30) { [weak self] in
             Task { @MainActor in self?.now = Date() }
         }
         Task { await refresh() }
+    }
+
+    /// Both timers must run in `.common` mode.
+    ///
+    /// `Timer.scheduledTimer` registers in `.default` only, and an open `MenuBarExtra` popover
+    /// puts the app in event tracking, where such a timer never fires: measured in this app,
+    /// over two seconds of tracking, a scheduled timer fired 0 times against 10 for a `.common`
+    /// one (`CLAUDEMENU_TIMERTEST=1` reproduces it). The panel would freeze exactly while it is
+    /// being read.
+    static func repeatingTimer(every interval: TimeInterval,
+                               _ tick: @escaping () -> Void) -> Timer {
+        let timer = Timer(timeInterval: interval, repeats: true) { _ in tick() }
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
     }
 
     /// Menu bar text: the weekly `all` meter, the one that actually runs out.
