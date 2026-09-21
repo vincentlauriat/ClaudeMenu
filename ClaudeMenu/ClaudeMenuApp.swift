@@ -4,11 +4,13 @@ import SwiftUI
 struct ClaudeMenuApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var viewModel = UsageViewModel()
+    @StateObject private var updater = UpdaterController()
 
     var body: some Scene {
         MenuBarExtra {
             UsagePanelView()
                 .environmentObject(viewModel)
+                .environmentObject(updater)
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "gauge.with.dots.needle.33percent")
@@ -31,6 +33,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Built only for the two development modes. In normal mode it stays nil, so the app
     /// runs a single `UsageViewModel` and polls Anthropic's gauge on one schedule.
     private var debugModel: UsageViewModel?
+    /// Diagnostics never start Sparkle: measuring a panel must not fire an update check.
+    private let diagnosticUpdater = UpdaterController(starting: false)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let env = ProcessInfo.processInfo.environment
@@ -52,7 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         debugModel = model
         let window = NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = "ClaudeMenu (debug)"
-        let hosting = NSHostingView(rootView: UsagePanelView().environmentObject(model))
+        let hosting = NSHostingView(rootView: UsagePanelView().environmentObject(model).environmentObject(diagnosticUpdater))
         window.contentView = hosting
         // Size to the panel itself, so the debug window shows the real popover geometry.
         window.setContentSize(hosting.fittingSize)
@@ -101,7 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// not a substitute: it once reported 640pt for a panel the real popover sized to 10pt.
     private func measure(_ model: UsageViewModel) async {
         let scrolls = ProcessInfo.processInfo.environment["CLAUDEMENU_MEASURE_PLAIN"] != "1"
-        let controller = NSHostingController(rootView: UsagePanelView(scrolls: scrolls).environmentObject(model))
+        let controller = NSHostingController(rootView: UsagePanelView(scrolls: scrolls).environmentObject(model).environmentObject(diagnosticUpdater))
         controller.sizingOptions = [.preferredContentSize]
         // Host it in an off-screen window so SwiftUI actually lays the view out.
         let window = NSWindow(contentRect: NSRect(x: -10_000, y: -10_000, width: 10, height: 10),
@@ -134,6 +138,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let dark = ProcessInfo.processInfo.environment["CLAUDEMENU_SNAPSHOT_DARK"] == "1"
         let view = UsagePanelView(scrolls: false)
             .environmentObject(model)
+            .environmentObject(diagnosticUpdater)
             // The popover's own material is not part of the view, so stand in a plain ground.
             .background(dark ? Color(white: 0.13) : Color(white: 0.96))
             .environment(\.colorScheme, dark ? .dark : .light)

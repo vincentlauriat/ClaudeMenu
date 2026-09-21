@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
-# Build → sign (Developer ID + Hardened Runtime) → DMG → notarize → staple.
-# Generic macOS release pipeline (no Sparkle auto-update).
+# Build → sign (Developer ID + Hardened Runtime) → DMG → notarize → staple →
+# EdDSA-sign for Sparkle and refresh appcast.xml.
+#
+# ┌──────────────────────────────────────────────────────────────────────────┐
+# │ SPARKLE SIGNING KEY — DO NOT REGENERATE                                  │
+# │                                                                          │
+# │ Updates are EdDSA-signed with the private key in the login keychain      │
+# │ under the account "ClaudeMenu". Its public half is embedded in the app   │
+# │ as SUPublicEDKey in project.yml:                                         │
+# │     YKJW/w5ffEn2VZ9A60ntS2MSZYW8FwhqXrToBz/RUDM=                         │
+# │                                                                          │
+# │ NEVER run `generate_keys` again for this account and NEVER change        │
+# │ SUPublicEDKey: every installed copy would reject all future updates.     │
+# │ The private half is backed up at                                         │
+# │     ~/Documents/SparkleKeys/ClaudeMenu-sparkle-private-key.txt           │
+# └──────────────────────────────────────────────────────────────────────────┘
 #
 # Usage:   ./Scripts/release.sh <version>
 # Example: ./Scripts/release.sh 1.0.0
@@ -74,6 +88,19 @@ codesign_ts() {
   echo "✗ codesign failed for $target" >&2
   return 1
 }
+# Sparkle ships its own helper executables. They must be signed from the most
+# deeply nested outwards, otherwise notarization fails late and slowly.
+SPARKLE_FW="$STAGING/Contents/Frameworks/Sparkle.framework"
+if [ -d "$SPARKLE_FW" ]; then
+  echo "▶︎ codesign Sparkle.framework nested binaries (deepest first)"
+  SPARKLE_VER="$SPARKLE_FW/Versions/B"
+  codesign_ts "$SPARKLE_VER/Autoupdate"
+  codesign_ts "$SPARKLE_VER/XPCServices/Downloader.xpc"
+  codesign_ts "$SPARKLE_VER/XPCServices/Installer.xpc"
+  codesign_ts "$SPARKLE_VER/Updater.app"
+  codesign_ts "$SPARKLE_FW"
+fi
+
 echo "▶︎ codesign (Developer ID, Hardened Runtime)"
 codesign_ts "$STAGING"
 codesign --verify --strict --deep --verbose=1 "$STAGING"
@@ -131,6 +158,53 @@ xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait
 echo "▶︎ staple"
 xcrun stapler staple "$DMG"
 xcrun stapler validate "$DMG"
+
+# ── Sparkle: EdDSA-sign the DMG and refresh the appcast ──────────────────────
+SPARKLE_VERSION="2.9.1"
+SPARKLE_TOOLS="$ROOT/.sparkle-tools"
+if [ ! -x "$SPARKLE_TOOLS/bin/sign_update" ]; then
+  echo "▶︎ fetching Sparkle $SPARKLE_VERSION tools (one-time)"
+  mkdir -p "$SPARKLE_TOOLS"
+  curl -fsSL "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz" \
+    | tar -xJ -C "$SPARKLE_TOOLS"
+fi
+
+echo "▶︎ EdDSA-signing the DMG for Sparkle"
+# Emits: sparkle:edSignature="…" length="<bytes>"
+SPARKLE_SIG_LINE="$("$SPARKLE_TOOLS/bin/sign_update" --account "ClaudeMenu" "$DMG")"
+
+# Sparkle compares <sparkle:version> against the RUNNING app's CFBundleVersion,
+# which is an integer here. Putting the marketing version in that element makes
+# the comparator read 1.0.0 against 1 and conclude "up to date", so the update
+# is never offered. Marketing version goes in shortVersionString only.
+BUILD_NUMBER="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$STAGING/Contents/Info.plist")"
+MIN_OS="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$STAGING/Contents/Info.plist")"
+PUB_DATE="$(LC_ALL=C date -R)"
+
+echo "▶︎ writing appcast.xml (sparkle:version=$BUILD_NUMBER, shortVersionString=$VERSION)"
+cat > "$ROOT/appcast.xml" <<APPCAST
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>ClaudeMenu</title>
+    <link>https://raw.githubusercontent.com/vincentlauriat/ClaudeMenu/main/appcast.xml</link>
+    <description>ClaudeMenu release feed</description>
+    <language>en</language>
+    <item>
+      <title>v$VERSION</title>
+      <pubDate>$PUB_DATE</pubDate>
+      <sparkle:version>$BUILD_NUMBER</sparkle:version>
+      <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>$MIN_OS</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://github.com/vincentlauriat/ClaudeMenu/releases/tag/v$VERSION</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/vincentlauriat/ClaudeMenu/releases/download/v$VERSION/$DMG_SLUG-$VERSION.dmg"
+        type="application/octet-stream"
+        $SPARKLE_SIG_LINE />
+    </item>
+  </channel>
+</rss>
+APPCAST
 
 SIZE="$(du -h "$DMG" | cut -f1 | tr -d ' ')"
 echo

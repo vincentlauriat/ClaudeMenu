@@ -6,6 +6,7 @@ struct UsagePanelView: View {
     var scrolls = true
 
     @EnvironmentObject private var vm: UsageViewModel
+    @EnvironmentObject private var updater: UpdaterController
     @AppStorage("section.limits") private var showLimits = true
     @AppStorage("section.tokens") private var showTokens = false
     @AppStorage("section.savings") private var showSavings = false
@@ -43,7 +44,7 @@ struct UsagePanelView: View {
     /// measurement, so during the sizing pass it proposes zero to its content and every
     /// reading comes back zero. Asking AppKit to size a non-scrolling copy has no such loop.
     private func remeasure() {
-        contentHeight = PanelSizer.naturalHeight(of: UsagePanelView(scrolls: false).environmentObject(vm))
+        contentHeight = PanelSizer.naturalHeight(of: UsagePanelView(scrolls: false).environmentObject(vm).environmentObject(updater))
     }
 
     /// Everything that changes how tall the panel wants to be. Text that merely gets longer
@@ -361,6 +362,15 @@ struct UsagePanelView: View {
             }
             .buttonStyle(.plain)
             .disabled(vm.isRefreshing)
+            Divider().opacity(0.4).padding(.leading, 46)
+            Button { updater.checkForUpdates() } label: {
+                ActionRow(icon: "arrow.down.circle", iconColor: .purple,
+                          title: "Rechercher des mises à jour",
+                          subtitle: "Version \(updater.currentVersion)")
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!updater.canCheck)
             Divider().opacity(0.4).padding(.leading, 46)
             ActionRow(icon: "power", iconColor: .orange, title: "Lancer au démarrage") {
                 Toggle("", isOn: $vm.launchAtLogin)

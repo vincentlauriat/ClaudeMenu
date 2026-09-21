@@ -26,5 +26,15 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
+	<key>SUAutomaticallyUpdate</key>
+	<false/>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/vincentlauriat/ClaudeMenu/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>YKJW/w5ffEn2VZ9A60ntS2MSZYW8FwhqXrToBz/RUDM=</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

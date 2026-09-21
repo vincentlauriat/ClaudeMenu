@@ -4,6 +4,14 @@ All notable changes to ClaudeMenu are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/1.1.0/)
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.0] - 2026-09-21
+
+First public release, signed with a Developer ID certificate and notarised by Apple.
+
+### Added
+- Sparkle 2 auto-update. Later versions install from inside the app, from a "Rechercher des mises à jour" row in the settings card. Updates are EdDSA-signed; the app checks daily but never downloads or installs without consent.
+- As an agent app with no Dock icon, ClaudeMenu raises itself to a regular, activatable application while Sparkle shows anything, and lowers itself back afterwards. Without that, update dialogs would open behind other windows with no way to reach them.
+
 ## [Unreleased]
 
 ### Added

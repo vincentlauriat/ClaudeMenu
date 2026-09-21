@@ -4,6 +4,11 @@ options:
   deploymentTarget:
     macOS: "14.0"
 
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.9.1"
+
 # Explicit scheme (xcodegen does not generate one otherwise).
 schemes:
   ClaudeMenu:
@@ -18,6 +23,8 @@ targets:
     type: application
     platform: macOS
     deploymentTarget: "14.0"
+    dependencies:
+      - package: Sparkle
     sources:
       - path: ClaudeMenu
         excludes:
@@ -47,3 +54,12 @@ targets:
         LSMinimumSystemVersion: "14.0"
         LSUIElement: true
         NSHumanReadableCopyright: ""
+        # Sparkle 2 auto-update. SUPublicEDKey is the public half of the EdDSA key
+        # held in the login keychain under the account "ClaudeMenu". Never change it
+        # and never regenerate the key: every installed copy would reject all future
+        # updates. The private half is backed up outside this repo.
+        SUFeedURL: "https://raw.githubusercontent.com/vincentlauriat/ClaudeMenu/main/appcast.xml"
+        SUPublicEDKey: "YKJW/w5ffEn2VZ9A60ntS2MSZYW8FwhqXrToBz/RUDM="
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 86400
+        SUAutomaticallyUpdate: false

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>ClaudeMenu</title>
+    <link>https://raw.githubusercontent.com/vincentlauriat/ClaudeMenu/main/appcast.xml</link>
+    <description>ClaudeMenu release feed</description>
+    <language>en</language>
+    <item>
+      <title>v1.0.0</title>
+      <pubDate>Mon, 21 Sep 2026 20:55:04 +0200</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://github.com/vincentlauriat/ClaudeMenu/releases/tag/v1.0.0</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/vincentlauriat/ClaudeMenu/releases/download/v1.0.0/ClaudeMenu-1.0.0.dmg"
+        type="application/octet-stream"
+        sparkle:edSignature="Xlcvwj5TjwzCnodzlCuVbZhCsloTi5Ad6MwrwlSaYiZb1KCY0WAYCzadbrp+wC6iABDiLddRYIVrmnLEIZSgCg==" length="1588517" />
+    </item>
+  </channel>
+</rss>
