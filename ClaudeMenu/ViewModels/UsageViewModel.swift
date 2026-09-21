@@ -62,6 +62,23 @@ final class UsageViewModel: ObservableObject {
     }
 
     /// `force` is the refresh button: it ignores the gauge interval but not an active backoff.
+#if DEBUG
+    /// A representative snapshot for layout diagnostics: session meter, `all`, and one model.
+    private func applyLayoutFixture() {
+        let now = Date()
+        gauge = GaugeSnapshot(
+            fetchedAt: now,
+            session: Meter(key: "five_hour", name: "session", utilization: 54,
+                           resetsAt: now.addingTimeInterval(3 * 3600), windowHours: 5),
+            week: Meter(key: "seven_day", name: "all", utilization: 84,
+                        resetsAt: now.addingTimeInterval(76 * 3600), windowHours: 168),
+            models: [Meter(key: "seven_day_fable", name: "fable", utilization: 74,
+                           resetsAt: now.addingTimeInterval(76 * 3600), windowHours: 168)]
+        )
+        gaugeError = nil
+    }
+#endif
+
     func refresh(force: Bool = false) async {
         guard !isRefreshing else { return }
         isRefreshing = true
@@ -85,6 +102,17 @@ final class UsageViewModel: ObservableObject {
     }
 
     private func refreshGauge() async {
+#if DEBUG
+        // Layout diagnostics need a panel whose shape is stable and that costs no API call:
+        // heights measured while the gauge is failing describe the error card, not the panel.
+        // Debug-only: this pins the gauge, and a release build must never be pinned by a
+        // stray environment variable.
+        if ProcessInfo.processInfo.environment["CLAUDEMENU_FIXTURE"] == "1" {
+            applyLayoutFixture()
+            nextGaugeFetch = .distantFuture
+            return
+        }
+#endif
         lastGaugeFetch = Date()
         do {
             let token = try CredentialStore.accessToken()

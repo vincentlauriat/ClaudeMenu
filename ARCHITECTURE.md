@@ -52,7 +52,9 @@
   couleurs forcé, la fenêtre `MenuBarExtra` laisse voir le matériau système et suit clair et
   sombre. Les cartes sont des opacités de `Color.primary`.
 - **Hauteur** : les sections repliables laissent le popover s'ajuster à son contenu, plafonné à
-  640 pt et défilant au-delà (mesuré : 521 pt tout replié, 559 pt par défaut, 640 pt tout ouvert).
+  la hauteur d'écran utilisable (`visibleFrame.height - 24`) et défilant au-delà. Mesures avec la
+  jauge fixe : 577 pt tout replié, 889 pt dans l'état par défaut, 1369 pt tout ouvert. Un plafond
+  codé en dur est un bug : 640 pt coupait le panneau par défaut.
 - **`UsagePanelView(scrolls:)`** : le popover défile, mais `ImageRenderer` ne met pas en page un
   `ScrollView` ; le mode capture rend donc le même contenu sans ce conteneur.
 - **La hauteur du conteneur défilant est concrète, jamais déduite** : un `ScrollView` n'a pas de
@@ -69,6 +71,7 @@
 | `CLAUDEMENU_SNAPSHOT_DARK=1` | Rend cette capture en mode sombre |
 | `CLAUDEMENU_MEASURE=1` | Affiche la taille que le popover demanderait, puis quitte. Seule vérification fiable de la hauteur du panneau |
 | `CLAUDEMENU_MEASURE_PLAIN=1` | Avec la précédente, mesure le contenu sans son conteneur défilant |
+| `CLAUDEMENU_FIXTURE=1` | Jauge fixe, debug uniquement : mesures de mise en page déterministes, sans appel API |
 | `CLAUDEMENU_TIMERTEST=1` | Déclenche un minuteur planifié et celui de l'app dans chaque mode du run loop, affiche les compteurs puis quitte |
 
 ## Build & release

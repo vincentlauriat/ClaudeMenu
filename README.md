@@ -157,7 +157,7 @@ CLAUDEMENU_SNAPSHOT_DARK=1 CLAUDEMENU_SNAPSHOT=/tmp/panel-dark.png \
 
 ```bash
 # The size the popover would ask for, in the current section state
-CLAUDEMENU_MEASURE=1 build/Build/Products/Debug/ClaudeMenu.app/Contents/MacOS/ClaudeMenu
+CLAUDEMENU_FIXTURE=1 CLAUDEMENU_MEASURE=1 build/Build/Products/Debug/ClaudeMenu.app/Contents/MacOS/ClaudeMenu
 
 # Which timers keep firing while the run loop tracks events, the mode an open popover
 # puts the app in. A scheduled timer fires 0 times there; the app's own timer keeps going.
@@ -168,6 +168,16 @@ CLAUDEMENU_TIMERTEST=1 build/Build/Products/Debug/ClaudeMenu.app/Contents/MacOS/
 without that container. A blank PNG means that flag was lost. `CLAUDEMENU_MEASURE=1` is the
 only reliable check of the popover's height: `NSHostingView.fittingSize` once reported 640pt
 for a panel the real popover sized to 10pt.
+
+Always pair it with `CLAUDEMENU_FIXTURE=1`, a debug-only fixed gauge that costs no API call.
+Without it a rate-limited run measures the error card instead of the panel, silently. The
+section state comes from user defaults:
+
+```bash
+defaults write fr.vincentlauriat.claudemenu section.limits  -bool true
+defaults write fr.vincentlauriat.claudemenu section.tokens  -bool true
+defaults write fr.vincentlauriat.claudemenu section.savings -bool true
+```
 
 ### Project layout
 

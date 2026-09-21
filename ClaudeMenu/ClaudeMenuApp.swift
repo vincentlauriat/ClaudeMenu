@@ -115,7 +115,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         try? await Task.sleep(nanoseconds: 1_500_000_000)
         let size = controller.preferredContentSize
-        FileHandle.standardError.write(Data("popover size: \(Int(size.width))x\(Int(size.height))\n".utf8))
+        // Report the data state too: a height measured while the gauge is failing describes
+        // the error card, not the real panel.
+        let state = model.gauge == nil
+            ? "gauge unavailable"
+            : "gauge ok, \(model.gauge?.weeklyMeters.count ?? 0) weekly meters, session \(model.gauge?.session == nil ? "absent" : "present")"
+        FileHandle.standardError.write(Data("popover size: \(Int(size.width))x\(Int(size.height))  [\(state)]\n".utf8))
         NSApplication.shared.terminate(nil)
     }
 

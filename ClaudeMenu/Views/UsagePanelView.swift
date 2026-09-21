@@ -20,9 +20,12 @@ struct UsagePanelView: View {
     @State private var contentHeight: CGFloat = 0
 
     /// The popover must fit under the menu bar, whatever sections are open.
+    /// The popover may use the whole strip between the menu bar and the Dock. `visibleFrame`
+    /// already excludes both, so only a small breathing margin comes off it. A fixed ceiling
+    /// here is a bug: it clipped the default panel, which is 889pt tall once the gauge loads.
     private var maxHeight: CGFloat {
-        let screen = NSScreen.main?.visibleFrame.height ?? 800
-        return min(640, max(320, screen - 120))
+        let usable = NSScreen.main?.visibleFrame.height ?? 800
+        return max(320, usable - 24)
     }
 
     /// A `ScrollView` has no intrinsic height: asked for its ideal size it answers

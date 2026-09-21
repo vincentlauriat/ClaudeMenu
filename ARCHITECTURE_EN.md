@@ -49,8 +49,9 @@
 - **Native material, not a painted dark theme**: no background fill, no forced colour scheme,
   so the `MenuBarExtra` window shows the system material and follows light and dark. Cards are
   `Color.primary` opacities.
-- **Height**: collapsible sections let the popover size to its content, capped at 640pt and
-  scrolling past it (measured: 521pt all collapsed, 559pt default, 640pt all open).
+- **Height**: collapsible sections let the popover size to its content, capped at the usable
+  screen height (`visibleFrame.height - 24`) and scrolling past it. Measured against the fixed
+  gauge: 577pt all collapsed, 889pt in the default state, 1369pt with every section open. A hardcoded ceiling is a bug: 640pt clipped the default panel.
 - **`UsagePanelView(scrolls:)`**: the popover scrolls, but `ImageRenderer` does not lay out a
   `ScrollView`, so the snapshot mode renders the same content without that container.
 - **The scroll view's height is concrete, never inferred**: a `ScrollView` has no intrinsic
@@ -67,6 +68,7 @@
 | `CLAUDEMENU_SNAPSHOT_DARK=1` | Renders that snapshot in dark mode |
 | `CLAUDEMENU_MEASURE=1` | Prints the size the popover would ask for, then quits. The only reliable check of the panel's height |
 | `CLAUDEMENU_MEASURE_PLAIN=1` | With the above, measures the content without its scroll container |
+| `CLAUDEMENU_FIXTURE=1` | Debug-only fixed gauge: deterministic layout measurements with no API call |
 | `CLAUDEMENU_TIMERTEST=1` | Fires a scheduled timer and the app's own timer in each run loop mode and reports the counts, then quits |
 
 ## Build & release
