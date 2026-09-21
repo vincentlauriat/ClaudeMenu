@@ -5,6 +5,7 @@
 ![Platform](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange?logo=swift)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+[![Landing page](https://img.shields.io/badge/site-vincentlauriat.github.io%2FClaudeMenu-30d158)](https://vincentlauriat.github.io/ClaudeMenu/)
 
 <p align="center">
   <img src="docs/panel.png" alt="The ClaudeMenu panel: weekly quota, daily budget, per-model limits, token counts and tool savings" width="360">
