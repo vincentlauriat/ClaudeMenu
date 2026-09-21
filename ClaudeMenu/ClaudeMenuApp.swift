@@ -34,6 +34,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let env = ProcessInfo.processInfo.environment
+        if env["CLAUDEMENU_MEASURE"] == "1" {
+            let model = UsageViewModel()
+            debugModel = model
+            Task { await measure(model) }
+            return
+        }
         if let path = env["CLAUDEMENU_SNAPSHOT"], !path.isEmpty {
             let model = UsageViewModel()
             debugModel = model
@@ -59,6 +65,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         debugWindow = window
+    }
+
+    /// Reports the size the panel asks for, the way a popover asks for it.
+    ///
+    /// `MenuBarExtra(.window)` sizes its window from the SwiftUI view's ideal size, which is
+    /// what `NSHostingController` publishes as `preferredContentSize` under
+    /// `.preferredContentSize` sizing. `NSHostingView.fittingSize` answers differently and is
+    /// not a substitute: it once reported 640pt for a panel the real popover sized to 10pt.
+    private func measure(_ model: UsageViewModel) async {
+        let scrolls = ProcessInfo.processInfo.environment["CLAUDEMENU_MEASURE_PLAIN"] != "1"
+        let controller = NSHostingController(rootView: UsagePanelView(scrolls: scrolls).environmentObject(model))
+        controller.sizingOptions = [.preferredContentSize]
+        // Host it in an off-screen window so SwiftUI actually lays the view out.
+        let window = NSWindow(contentRect: NSRect(x: -10_000, y: -10_000, width: 10, height: 10),
+                              styleMask: [.borderless], backing: .buffered, defer: false)
+        window.contentViewController = controller
+        window.orderBack(nil)
+        for _ in 0..<40 {
+            if model.gauge != nil || model.gaugeError != nil,
+               model.stats.scannedAt != .distantPast { break }
+            try? await Task.sleep(nanoseconds: 500_000_000)
+        }
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        let size = controller.preferredContentSize
+        FileHandle.standardError.write(Data("popover size: \(Int(size.width))x\(Int(size.height))\n".utf8))
+        NSApplication.shared.terminate(nil)
     }
 
     /// Waits for the first refresh, then renders the panel with `ImageRenderer`.

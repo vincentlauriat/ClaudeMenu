@@ -16,18 +16,55 @@ struct UsagePanelView: View {
     /// Only used for the sentences that extrapolate a rate.
     private var weekPace: PaceProjection? { (weekReset?.isMeaningful ?? false) ? weekReset : nil }
 
+    /// The panel's natural height, measured through AppKit (see `remeasure`).
+    @State private var contentHeight: CGFloat = 0
+
     /// The popover must fit under the menu bar, whatever sections are open.
     private var maxHeight: CGFloat {
         let screen = NSScreen.main?.visibleFrame.height ?? 800
         return min(640, max(320, screen - 120))
     }
 
+    /// A `ScrollView` has no intrinsic height: asked for its ideal size it answers
+    /// almost nothing, and `maxHeight` only clamps, it never supplies one. Left that
+    /// way the MenuBarExtra window collapses to a few points and the panel looks like
+    /// it never opens. So the height is always concrete, and never zero.
+    private var resolvedHeight: CGFloat {
+        min(contentHeight > 0 ? contentHeight : Self.fallbackHeight, maxHeight)
+    }
+    private static let fallbackHeight: CGFloat = 560
+
+    /// Re-measures the panel and stores its natural height.
+    ///
+    /// SwiftUI cannot measure this from the inside: the scroll view's height comes from the
+    /// measurement, so during the sizing pass it proposes zero to its content and every
+    /// reading comes back zero. Asking AppKit to size a non-scrolling copy has no such loop.
+    private func remeasure() {
+        contentHeight = PanelSizer.naturalHeight(of: UsagePanelView(scrolls: false).environmentObject(vm))
+    }
+
+    /// Everything that changes how tall the panel wants to be. Text that merely gets longer
+    /// is not tracked: it moves the height by a few points, and the scroll view absorbs that.
+    private var layoutSignature: String {
+        let gauge = vm.gauge
+        return [
+            showLimits.description, showTokens.description, showSavings.description,
+            (gauge?.weeklyMeters.count ?? -1).description,
+            (gauge?.session != nil).description,
+            (vm.gaugeError != nil).description,
+            vm.rtkInstalled.description, (vm.rtk != nil).description,
+            vm.jevInstalled.description, (vm.stats.jevWeek.attempts > 0).description,
+            (vm.stats.jevToday.compactions > 0).description,
+        ].joined(separator: "|")
+    }
+
     var body: some View {
         if scrolls {
             ScrollView(.vertical) { content }
                 .scrollBounceBehavior(.basedOnSize)
-                .frame(width: Theme.panelWidth)
-                .frame(maxHeight: maxHeight)
+                .frame(width: Theme.panelWidth, height: resolvedHeight)
+                .onAppear { remeasure() }
+                .onChange(of: layoutSignature) { _ in remeasure() }
         } else {
             content.frame(width: Theme.panelWidth)
         }
@@ -351,5 +388,17 @@ struct UsagePanelView: View {
     private var appVersion: String {
         let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         return "v\(v)"
+    }
+}
+
+/// Sizes a SwiftUI view the way a popover does: AppKit lays it out and reports the size it
+/// asks for. Used to give the scroll view a concrete height without a measurement loop.
+@MainActor
+enum PanelSizer {
+    static func naturalHeight(of view: some View) -> CGFloat {
+        let controller = NSHostingController(rootView: view)
+        controller.sizingOptions = [.preferredContentSize]
+        controller.view.layoutSubtreeIfNeeded()
+        return controller.preferredContentSize.height
     }
 }

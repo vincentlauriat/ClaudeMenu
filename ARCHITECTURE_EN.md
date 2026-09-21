@@ -53,6 +53,10 @@
   scrolling past it (measured: 521pt all collapsed, 559pt default, 640pt all open).
 - **`UsagePanelView(scrolls:)`**: the popover scrolls, but `ImageRenderer` does not lay out a
   `ScrollView`, so the snapshot mode renders the same content without that container.
+- **The scroll view's height is concrete, never inferred**: a `ScrollView` has no intrinsic
+  height, and in a `MenuBarExtra` window that collapses the popover to a few points. `PanelSizer`
+  measures a non-scrolling copy with `NSHostingController.preferredContentSize`, and the panel
+  re-measures whenever `layoutSignature` changes.
 
 ## Development modes
 
@@ -61,6 +65,8 @@
 | `CLAUDEMENU_DEBUG_WINDOW=1` | Also opens the panel in a regular window, sized to the panel's own fitting size |
 | `CLAUDEMENU_SNAPSHOT=<path.png>` | Renders the panel off screen with `ImageRenderer`, writes the PNG and quits. Reads nothing from the screen, so it is safe during a call or a screen share |
 | `CLAUDEMENU_SNAPSHOT_DARK=1` | Renders that snapshot in dark mode |
+| `CLAUDEMENU_MEASURE=1` | Prints the size the popover would ask for, then quits. The only reliable check of the panel's height |
+| `CLAUDEMENU_MEASURE_PLAIN=1` | With the above, measures the content without its scroll container |
 
 ## Build & release
 

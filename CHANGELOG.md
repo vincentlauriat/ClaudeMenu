@@ -21,6 +21,9 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 - Development modes: `CLAUDEMENU_DEBUG_WINDOW=1` opens the panel in a regular window, and
   `CLAUDEMENU_SNAPSHOT=<path.png>` renders it off screen to a PNG without reading the screen.
 
+### Fixed
+- The panel no longer fails to open: the scroll view added to cap its height left the menu bar window 10 points tall. It now receives a concrete height and adapts to the open sections, capped so it always fits under the menu bar.
+
 ### Notes
 - No tagged release yet: build from source, see the README.
 - The app icon is still a generated placeholder.

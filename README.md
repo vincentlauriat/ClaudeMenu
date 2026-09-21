@@ -155,8 +155,15 @@ CLAUDEMENU_SNAPSHOT_DARK=1 CLAUDEMENU_SNAPSHOT=/tmp/panel-dark.png \
   build/Build/Products/Debug/ClaudeMenu.app/Contents/MacOS/ClaudeMenu
 ```
 
+```bash
+# The size the popover would ask for, in the current section state
+CLAUDEMENU_MEASURE=1 build/Build/Products/Debug/ClaudeMenu.app/Contents/MacOS/ClaudeMenu
+```
+
 `ImageRenderer` does not lay out a `ScrollView`, so the snapshot mode renders the same content
-without that container. A blank PNG means that flag was lost.
+without that container. A blank PNG means that flag was lost. `CLAUDEMENU_MEASURE=1` is the
+only reliable check of the popover's height: `NSHostingView.fittingSize` once reported 640pt
+for a panel the real popover sized to 10pt.
 
 ### Project layout
 

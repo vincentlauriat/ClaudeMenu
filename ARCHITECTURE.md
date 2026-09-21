@@ -55,6 +55,10 @@
   640 pt et défilant au-delà (mesuré : 521 pt tout replié, 559 pt par défaut, 640 pt tout ouvert).
 - **`UsagePanelView(scrolls:)`** : le popover défile, mais `ImageRenderer` ne met pas en page un
   `ScrollView` ; le mode capture rend donc le même contenu sans ce conteneur.
+- **La hauteur du conteneur défilant est concrète, jamais déduite** : un `ScrollView` n'a pas de
+  hauteur intrinsèque, et dans une fenêtre `MenuBarExtra` cela réduit le popover à quelques points.
+  `PanelSizer` mesure une copie non défilante via `NSHostingController.preferredContentSize`, et le
+  panneau se remesure dès que `layoutSignature` change.
 
 ## Modes de développement
 
@@ -63,6 +67,8 @@
 | `CLAUDEMENU_DEBUG_WINDOW=1` | Ouvre aussi le panneau dans une fenêtre classique, dimensionnée à la taille naturelle du panneau |
 | `CLAUDEMENU_SNAPSHOT=<chemin.png>` | Rend le panneau hors écran avec `ImageRenderer`, écrit le PNG et quitte. Ne lit rien de l'écran : utilisable pendant un appel ou un partage d'écran |
 | `CLAUDEMENU_SNAPSHOT_DARK=1` | Rend cette capture en mode sombre |
+| `CLAUDEMENU_MEASURE=1` | Affiche la taille que le popover demanderait, puis quitte. Seule vérification fiable de la hauteur du panneau |
+| `CLAUDEMENU_MEASURE_PLAIN=1` | Avec la précédente, mesure le contenu sans son conteneur défilant |
 
 ## Build & release
 
