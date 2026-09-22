@@ -2,6 +2,15 @@ import Foundation
 import Combine
 import ServiceManagement
 
+/// Which meter the menu bar shows. The other one stays visible in the limits section.
+enum MenuBarMeter: String, CaseIterable, Identifiable {
+    case week, session
+    var id: String { rawValue }
+    var label: String { self == .week ? "Semaine" : "Session" }
+    /// Tells the reader which window a bare percentage belongs to.
+    var symbol: String { self == .week ? "calendar" : "clock" }
+}
+
 @MainActor
 final class UsageViewModel: ObservableObject {
     @Published private(set) var gauge: GaugeSnapshot?
@@ -16,6 +25,13 @@ final class UsageViewModel: ObservableObject {
     @Published var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled {
         didSet { applyLaunchAtLogin() }
     }
+    /// Deliberately not `@AppStorage`: that is a `DynamicProperty`, refreshed only while a view
+    /// graph is being evaluated. In an `ObservableObject` it would read once and never publish,
+    /// so the menu bar title would silently stop following the setting.
+    @Published var menuBarMeter: MenuBarMeter {
+        didSet { UserDefaults.standard.set(menuBarMeter.rawValue, forKey: Self.meterKey) }
+    }
+    private static let meterKey = "menubar.meter"
 
     /// Panel tick: transcripts are cheap to rescan, the gauge is not.
     static let refreshInterval: TimeInterval = 60
@@ -32,6 +48,8 @@ final class UsageViewModel: ObservableObject {
     private var backoff: TimeInterval = 0
 
     init() {
+        menuBarMeter = UserDefaults.standard.string(forKey: Self.meterKey)
+            .flatMap(MenuBarMeter.init(rawValue:)) ?? .week
         refreshTimer = Self.repeatingTimer(every: Self.refreshInterval) { [weak self] in
             Task { @MainActor in await self?.refresh() }
         }
@@ -55,10 +73,29 @@ final class UsageViewModel: ObservableObject {
         return timer
     }
 
-    /// Menu bar text: the weekly `all` meter, the one that actually runs out.
+    /// The meter the menu bar actually displays: the chosen one, or the other if the API did
+    /// not return it. Falling back beats showing an error glyph for a meter that is merely absent.
+    private var shownMeter: (kind: MenuBarMeter, meter: Meter)? {
+        let week = gauge?.week, session = gauge?.session
+        switch menuBarMeter {
+        case .week:
+            if let week { return (.week, week) }
+            if let session { return (.session, session) }
+        case .session:
+            if let session { return (.session, session) }
+            if let week { return (.week, week) }
+        }
+        return nil
+    }
+
     var menuBarTitle: String {
-        guard let week = gauge?.week else { return gaugeError == nil ? "…" : "!" }
-        return "\(Int(week.utilization.rounded()))%"
+        guard let shown = shownMeter else { return gaugeError == nil ? "…" : "!" }
+        return "\(Int(shown.meter.utilization.rounded()))%"
+    }
+
+    /// Named after what is on screen, not what is selected, so it stays truthful on a fallback.
+    var menuBarSymbol: String {
+        shownMeter?.kind.symbol ?? "gauge.with.dots.needle.33percent"
     }
 
     /// `force` is the refresh button: it ignores the gauge interval but not an active backoff.

@@ -12,6 +12,14 @@ First public release, signed with a Developer ID certificate and notarised by Ap
 - Sparkle 2 auto-update. Later versions install from inside the app, from a "Rechercher des mises à jour" row in the settings card. Updates are EdDSA-signed; the app checks daily but never downloads or installs without consent.
 - As an agent app with no Dock icon, ClaudeMenu raises itself to a regular, activatable application while Sparkle shows anything, and lowers itself back afterwards. Without that, update dialogs would open behind other windows with no way to reach them.
 
+## [1.0.1] - 2026-09-22
+
+### Added
+- **Choose which meter the menu bar shows**: the 7-day quota or the 5-hour session, from a row in the settings card. The icon follows what is displayed, a calendar for the week and a clock for the session, so a bare percentage finally says which window it belongs to. If the selected meter is missing from the API response the other one is shown rather than an error glyph.
+
+### Changed
+- Scheduled update checks use Sparkle's gentle reminders: a background find never opens a window and never raises the app, it surfaces an "Installer la version X" row in the panel instead. Sparkle still handles user-initiated checks itself, and the app raises its activation policy for those so the window is reachable.
+
 ## [Unreleased]
 
 ### Changed

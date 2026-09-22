@@ -73,7 +73,7 @@ struct UsagePanelView: View {
                     // interval and the backoff still decide whether Anthropic is called.
                     Task { await vm.refresh() }
                 }
-                .onChange(of: layoutSignature) { _ in remeasure() }
+                .onChange(of: layoutSignature) { remeasure() }
         } else {
             content.frame(width: Theme.panelWidth)
         }
@@ -375,6 +375,18 @@ struct UsagePanelView: View {
             }
             .buttonStyle(.plain)
             .disabled(!updater.canCheck)
+            Divider().opacity(0.4).padding(.leading, 46)
+            // A segmented picker at a fixed width leaves too little room at 340pt: the title
+            // wrapped onto four lines and the row cost 122pt instead of 45.
+            ActionRow(icon: "menubar.rectangle", iconColor: .teal, title: "Barre de menus") {
+                Picker("", selection: $vm.menuBarMeter) {
+                    ForEach(MenuBarMeter.allCases) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .controlSize(.small)
+                .fixedSize()
+            }
             Divider().opacity(0.4).padding(.leading, 46)
             ActionRow(icon: "power", iconColor: .orange, title: "Lancer au démarrage") {
                 Toggle("", isOn: $vm.launchAtLogin)

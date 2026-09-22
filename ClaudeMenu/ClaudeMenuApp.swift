@@ -13,7 +13,7 @@ struct ClaudeMenuApp: App {
                 .environmentObject(updater)
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: "gauge.with.dots.needle.33percent")
+                Image(systemName: viewModel.menuBarSymbol)
                 Text(viewModel.menuBarTitle)
                     .monospacedDigit()
             }
