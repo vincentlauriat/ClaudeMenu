@@ -21,8 +21,12 @@ ClaudeMenu answers the second, and adds the exact token counts that the percenta
 
 ### The headline
 
-The menu bar carries the weekly percentage. Open it and the first card states where the week
-lands if nothing changes:
+The menu bar carries a percentage, and a row in the settings card picks which one: the 7-day
+quota or the 5-hour session. The icon follows what is on screen, a calendar for the week and a
+clock for the session, so a bare percentage says which window it belongs to. If Anthropic does
+not return the chosen meter, the other one is shown rather than an error glyph.
+
+Open the panel and the first card states where the week lands if nothing changes:
 
 > **17 %** · Quota hebdomadaire consommé
 > À ce rythme, le quota finira la semaine à 41 % : la marge est suffisante.
