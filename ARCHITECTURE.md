@@ -33,6 +33,7 @@
 | `JevDetector` + scanner | Détecte `~/.claude/plugins/cache/fast-jev-compaction` ; le scanner parse les notices `type: system` `fast-jev-compaction: kept K/M messages … (P% reduction …)` et `fallback to built-in summary` | Dédoublonnage par horodatage + texte (le hook journalise et affiche la même ligne) ; les lignes `decisions:` sont ignorées |
 | `UsageMath` / `PaceProjection` | % d'atterrissage, %/h nécessaire vs courant, part journalière égale | Début de fenêtre = `resets_at − windowHours`. `isMeaningful` refuse toute projection avant 30 minutes et 5 % de fenêtre écoulés |
 | `UsageViewModel` | Orchestre le rafraîchissement, expose l'état, lancement au démarrage (`SMAppService`) | Une seule instance. Les minuteurs tournent en mode `.common` du run loop, sans quoi ils s'arrêtent pendant que le popover est ouvert. Les tokens sont recomptés toutes les 60 s ; la jauge est appelée au plus toutes les 3 minutes, avec backoff exponentiel jusqu'à 15 minutes après un 429, en conservant le dernier relevé valide |
+| `UpdaterController` | Mise à jour automatique Sparkle 2 : vérification quotidienne en arrière-plan, ne télécharge et n'installe jamais sans accord | ClaudeMenu est `LSUIElement`, donc elle ne devient jamais l'application active et les fenêtres de Sparkle s'ouvriraient derrière tout le reste. Une vérification lancée par l'utilisateur fait passer la politique d'activation en `.regular` le temps de la session, puis la redescend. Une découverte **planifiée** n'affiche rien et ne remonte rien : elle propose une ligne « Installer la version X » dans le panneau, donc une vérification de fond ne peut pas voler le focus |
 | `UsagePanelView` | Le panneau, 340 pt de large, hauteur selon les sections ouvertes | En-tête (% hebdo, compte à rebours, barre segmentée, phrase de rythme), carte budget, trois sections `DisclosureCard` (limites Anthropic par modèle, tokens consommés, économies des outils), carte réglages (actualiser / lancer au démarrage / quitter) |
 | `Theme` + `DisclosureCard` / `InfoRow` / `ActionRow` / `SegmentedBar` | Briques de style Juicy | `DisclosureCard` est nommé ainsi pour ne jamais masquer `SwiftUI.Section` ; l'état ouvert/fermé est persisté via `@AppStorage` |
 
@@ -61,6 +62,21 @@
   hauteur intrinsèque, et dans une fenêtre `MenuBarExtra` cela réduit le popover à quelques points.
   `PanelSizer` mesure une copie non défilante via `NSHostingController.preferredContentSize`, et le
   panneau se remesure dès que `layoutSignature` change.
+
+## Mises à jour
+
+Sparkle 2, intégré comme Swift Package. Le flux est `appcast.xml` à la racine du dépôt, servi par
+`raw.githubusercontent.com` : aucune étape de build et aucun délai de propagation, contrairement
+au site Pages.
+
+`sparkle:version` porte le `CFBundleVersion`, que `Scripts/release.sh` dérive du nombre de commits,
+et `sparkle:shortVersionString` porte la version marketing. Sparkle compare cet entier à celui de
+l'app en cours : mettre `1.0.0` dans `sparkle:version` se lirait comme inférieur à un numéro de
+build et aucune mise à jour ne serait jamais proposée.
+
+Les mises à jour sont signées en EdDSA avec la clé privée du trousseau, compte `ClaudeMenu` ; sa
+moitié publique est embarquée dans `SUPublicEDKey`. Cette clé ne doit jamais être régénérée :
+toutes les copies installées rejetteraient les mises à jour suivantes.
 
 ## Modes de développement
 

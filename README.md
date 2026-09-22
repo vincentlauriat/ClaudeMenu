@@ -217,7 +217,6 @@ staples it.
 ## Known gaps
 
 - The app icon is still the generated placeholder.
-- The app icon is a generated placeholder.
 - The interface is French only.
 - The panel reads Anthropic's gauge; it cannot show usage for an account you are not signed
   into with Claude Code.

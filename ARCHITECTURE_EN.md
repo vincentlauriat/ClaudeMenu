@@ -33,6 +33,7 @@
 | `JevDetector` + scanner | Detects `~/.claude/plugins/cache/fast-jev-compaction`; the scanner parses `type: system` notices `fast-jev-compaction: kept K/M messages … (P% reduction …)` and `fallback to built-in summary` | De-duplicated by timestamp + text (the hook logs and toasts the same line); `decisions:` lines are ignored |
 | `UsageMath` / `PaceProjection` | Landing %, needed vs. running %/h, even daily share | Window start = `resets_at − windowHours`. `isMeaningful` refuses to project before 30 minutes and 5% of the window have elapsed |
 | `UsageViewModel` | Orchestrates refresh, exposes state, launch at login (`SMAppService`) | One instance only. Timers run in the run loop's `.common` mode, without which they stop while the popover is open. Tokens recount every 60 s; the gauge is called at most every 3 minutes, with exponential backoff to 15 minutes after a 429, keeping the last good reading |
+| `UpdaterController` | Sparkle 2 auto-update: daily background check, never downloads or installs without consent | ClaudeMenu is `LSUIElement`, so it never becomes the active application and Sparkle's windows would open behind everything. A user-initiated check raises the activation policy to `.regular` for the session and lowers it back after. A **scheduled** find shows nothing and raises nothing: it surfaces an "Installer la version X" row in the panel, so a background check cannot steal focus |
 | `UsagePanelView` | The panel, 340pt wide, height following the open sections | Hero (weekly %, reset countdown, segmented bar, pace sentence), budget card, three `DisclosureCard` sections (Anthropic limits per model, tokens consumed, tool savings), settings card (refresh / launch at login / quit) |
 | `Theme` + `DisclosureCard` / `InfoRow` / `ActionRow` / `SegmentedBar` | Juicy-like building blocks | `DisclosureCard` is named so it never shadows `SwiftUI.Section`; open/closed state persists through `@AppStorage` |
 
@@ -58,6 +59,20 @@
   height, and in a `MenuBarExtra` window that collapses the popover to a few points. `PanelSizer`
   measures a non-scrolling copy with `NSHostingController.preferredContentSize`, and the panel
   re-measures whenever `layoutSignature` changes.
+
+## Updates
+
+Sparkle 2, wired as a Swift Package. The feed is `appcast.xml` at the repo root, served over
+`raw.githubusercontent.com`: no build step and no propagation delay, unlike the Pages site.
+
+`sparkle:version` carries `CFBundleVersion`, which `Scripts/release.sh` derives from the commit
+count, and `sparkle:shortVersionString` carries the marketing version. Sparkle compares that
+integer against the running app, so putting `1.0.0` in `sparkle:version` would read as lower
+than a build number and no update would ever be offered.
+
+Updates are EdDSA-signed with the private key held in the login keychain under the account
+`ClaudeMenu`; its public half is embedded as `SUPublicEDKey`. That key must never be
+regenerated: every installed copy would reject all future updates.
 
 ## Development modes
 
