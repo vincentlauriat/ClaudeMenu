@@ -1,0 +1,106 @@
+{
+  "name": "ClaudeMenu",
+  "no": "07",
+  "repo": "vincentlauriat/ClaudeMenu",
+  "url": "https://vincentlauriat.github.io/ClaudeMenu/",
+  "accent": "#30d158",
+  "meta": {
+    "title": "ClaudeMenu — Where your Claude usage stands, in the macOS menu bar",
+    "description": "A macOS menu bar app showing Anthropic's own usage gauge — 5-hour and 7-day windows, per model — plus the pace that gets you to the reset, exact token counts read from your Claude Code transcripts, and the savings from RTK and fast-jev-compaction. Free and open source (MIT).",
+    "og_image": "https://vincentlauriat.github.io/ClaudeMenu/panel.png",
+    "favicon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2330d158'/%3E%3Cpath d='M22 62 a28 28 0 0 1 56 0' stroke='%2308090d' stroke-width='9' fill='none' stroke-linecap='round'/%3E%3Cpath d='M50 62 L66 40' stroke='%2308090d' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E"
+  },
+  "role": {"en": "macOS menu bar · MIT", "fr": "Barre de menus macOS · MIT", "zh": "macOS 選單列 · MIT"},
+  "thesis": {"en": "Your Claude quota, and whether today's pace makes it.",
+             "fr": "Votre quota Claude, et si le rythme du jour tiendra.",
+             "zh": "你的 Claude 配額，以及今天的節奏能否撐到重置。"},
+  "lede": {"en": "Anthropic tells you how much of the week is gone. ClaudeMenu tells you where it lands at the current pace, what today's fair share is, and exactly how many tokens you actually spent — counted from your own Claude Code transcripts.",
+           "fr": "Anthropic vous dit quelle part de la semaine est consommée. ClaudeMenu vous dit où elle atterrit au rythme actuel, quelle est la part du jour, et combien de tokens vous avez réellement dépensés — comptés sur vos propres transcripts Claude Code.",
+           "zh": "Anthropic 告訴你這週用掉了多少。ClaudeMenu 告訴你依目前節奏會落在哪裡、今天該用多少，以及你實際花了多少 token——直接從你自己的 Claude Code 記錄中計算。"},
+  "actions": [
+    {"primary": true, "href": "https://github.com/vincentlauriat/ClaudeMenu/releases/download/v1.0.0/ClaudeMenu-1.0.0.dmg",
+     "label": {"en": "Download for macOS", "fr": "Télécharger pour macOS", "zh": "下載 macOS 版"}},
+    {"href": "https://github.com/vincentlauriat/ClaudeMenu",
+     "label": {"en": "View on GitHub", "fr": "Voir sur GitHub", "zh": "在 GitHub 上檢視"}}
+  ],
+  "facts": [
+    {"k": {"en": "Requires", "fr": "Configuration", "zh": "系統需求"}, "v": "macOS 14+"},
+    {"k": {"en": "Version", "fr": "Version", "zh": "版本"}, "v": {"en": "v1.0.0, signed and notarised · updates itself", "fr": "v1.0.0, signée et notarisée · se met à jour seule", "zh": "v1.0.0，已簽署並經 Apple 公證 · 可自動更新"}},
+    {"k": {"en": "Licence", "fr": "Licence", "zh": "授權"}, "v": {"en": "Free &amp; open source (MIT)", "fr": "Gratuit et open source (MIT)", "zh": "免費開源（MIT）"}}
+  ],
+  "hero": {"src": "panel.png", "w": 680, "h": 2380,
+           "alt": "The ClaudeMenu panel: weekly quota at 17 %, daily budget, per-model Anthropic limits, token counts and tool savings",
+           "caption": {"en": "The panel, in French — the interface language today.",
+                       "fr": "Le panneau, en français — la langue de l'interface aujourd'hui.",
+                       "zh": "面板目前僅有法文介面。"}},
+  "opener": {"h": {"en": "Four readings, one glance", "fr": "Quatre relevés, un coup d'œil", "zh": "四項讀數，一眼看完"},
+             "p": {"en": "The menu bar carries the weekly percentage. Open it and every number that matters is one scroll away.",
+                   "fr": "La barre de menus porte le pourcentage hebdomadaire. Ouvrez-le et tous les chiffres utiles tiennent en un défilement.",
+                   "zh": "選單列顯示每週百分比。點開後，所有重要數字一捲即見。"}},
+  "features": [
+    {"h": {"en": "The pace, not just the level", "fr": "Le rythme, pas seulement le niveau", "zh": "節奏，而不只是水位"},
+     "p": {"en": "Where the week lands if nothing changes, and the daily budget that keeps an even pace to the reset. A window that just opened says so instead of extrapolating: 12 % three minutes in is not a 254 %/h habit.",
+           "fr": "Où la semaine atterrit si rien ne change, et le budget quotidien qui tient un rythme régulier jusqu'à la réinitialisation. Une fenêtre à peine ouverte le dit au lieu d'extrapoler : 12 % au bout de trois minutes n'est pas une habitude à 254 %/h.",
+           "zh": "若一切不變，本週將落在哪裡；以及維持穩定節奏所需的每日預算。剛開啟的視窗會直說，而不會外推：三分鐘內的 12 % 並不代表每小時 254 %。"}},
+    {"h": {"en": "Every Anthropic meter", "fr": "Toutes les jauges Anthropic", "zh": "每一項 Anthropic 計量"},
+     "p": {"en": "The 5-hour session, the 7-day quota, and one row per model-specific weekly limit — each with its reset time, its current rate in %/h and the sustainable rate that would land exactly on the limit.",
+           "fr": "La session de 5 h, le quota de 7 jours, et une ligne par limite hebdomadaire propre à un modèle — chacune avec son heure de réinitialisation, son rythme actuel en %/h et le rythme tenable qui atterrirait pile sur la limite.",
+           "zh": "5 小時工作階段、7 天配額，以及每個模型專屬的每週限制各一列——各自標示重置時間、目前每小時百分比，以及剛好落在上限的可持續速率。"}},
+    {"h": {"en": "Exact token counts", "fr": "Comptage exact des tokens", "zh": "精確的 token 計數"},
+     "p": {"en": "Percentages hide what you actually spent. Replies, output tokens and context tokens read, for today and the week, with per-reply averages — counted from your transcripts, not estimated.",
+           "fr": "Les pourcentages masquent la dépense réelle. Réponses, tokens écrits et tokens de contexte lus, pour aujourd'hui et la semaine, avec les moyennes par réponse — comptés sur vos transcripts, pas estimés.",
+           "zh": "百分比掩蓋了實際花費。今日與本週的回覆數、輸出 token 與讀取的脈絡 token，並附每則平均——直接計算自你的記錄，而非估算。"}},
+    {"h": {"en": "What your tools saved", "fr": "Ce que vos outils ont économisé", "zh": "你的工具省下了多少"},
+     "p": {"en": "If RTK is installed, the tokens it avoided today, this week and since install. If fast-jev-compaction is installed, how much context each compaction pruned while keeping the rest verbatim. Nothing shows otherwise.",
+           "fr": "Si RTK est installé, les tokens évités aujourd'hui, cette semaine et depuis l'installation. Si fast-jev-compaction est installé, le contexte élagué à chaque compaction, le reste étant gardé mot pour mot. Rien ne s'affiche sinon.",
+           "zh": "若已安裝 RTK，顯示今日、本週與自安裝以來省下的 token。若已安裝 fast-jev-compaction，顯示每次壓縮修剪掉多少脈絡，其餘逐字保留。未安裝則不顯示。"}}
+  ],
+  "chapters": [
+    {"id": "data",
+     "h": {"en": "Anthropic's own gauge, and your own transcripts", "fr": "La jauge d'Anthropic, et vos propres transcripts", "zh": "Anthropic 的官方計量，以及你自己的記錄"},
+     "p": {"en": "Nothing is estimated or reconstructed. The percentages come from the endpoint Claude Code itself reads, so they match <code>/usage</code> exactly.",
+           "fr": "Rien n'est estimé ni reconstruit. Les pourcentages viennent de l'endpoint que Claude Code lit lui-même : ils correspondent exactement à <code>/usage</code>.",
+           "zh": "沒有任何估算或重建。百分比來自 Claude Code 自己讀取的端點，因此與 <code>/usage</code> 完全一致。"},
+     "blocks": [
+       {"type": "pre", "code": "GET https://api.anthropic.com/api/oauth/usage\nAuthorization: Bearer <token from the login keychain>\nanthropic-beta: oauth-2025-04-20"},
+       {"type": "table",
+        "head": [{"en": "Concern", "fr": "Question", "zh": "項目"}, {"en": "How ClaudeMenu handles it", "fr": "Comment ClaudeMenu la traite", "zh": "ClaudeMenu 的處理方式"}],
+        "rows": [
+          [{"en": "The token", "fr": "Le jeton", "zh": "權杖"},
+           {"en": "Read from the <code>Claude Code-credentials</code> keychain item through <code>/usr/bin/security</code> — the same tool that wrote it, so macOS raises no second prompt. Kept in memory for the request, never written anywhere, never refreshed (that would race Claude Code).",
+            "fr": "Lu dans l'entrée de trousseau <code>Claude Code-credentials</code> via <code>/usr/bin/security</code> — l'outil même qui l'a écrite, donc pas de seconde invite macOS. Gardé en mémoire le temps de la requête, jamais écrit nulle part, jamais renouvelé (cela entrerait en concurrence avec Claude Code).",
+            "zh": "透過 <code>/usr/bin/security</code> 從 <code>Claude Code-credentials</code> 鑰匙圈項目讀取——正是寫入它的同一個工具，因此 macOS 不會再次提示。僅在請求期間存於記憶體，不寫入任何位置，也不更新（以免與 Claude Code 衝突）。"}],
+          [{"en": "Rate limits", "fr": "Limites d'appel", "zh": "速率限制"},
+           {"en": "The endpoint rate-limits hard, so the gauge is called at most every three minutes, with exponential backoff to fifteen minutes after a 429. The last good reading stays on screen.",
+            "fr": "L'endpoint limite fortement les lectures : la jauge est appelée au plus toutes les trois minutes, avec un backoff exponentiel jusqu'à quinze minutes après un 429. Le dernier relevé valide reste affiché.",
+            "zh": "該端點限制嚴格，因此最多每三分鐘讀取一次，收到 429 後以指數退避至十五分鐘。畫面持續顯示最後一次有效讀數。"}],
+          [{"en": "Token counts", "fr": "Comptage des tokens", "zh": "Token 計數"},
+           {"en": "Read incrementally from <code>~/.claude/projects/**/*.jsonl</code>, from the byte offset reached last time. An assistant message spans several JSONL lines repeating the same usage object, so they are de-duplicated by message id.",
+            "fr": "Lus de façon incrémentale depuis <code>~/.claude/projects/**/*.jsonl</code>, à partir de l'offset atteint la fois précédente. Un message assistant s'étale sur plusieurs lignes JSONL répétant le même objet d'usage : elles sont dédoublonnées par identifiant de message.",
+            "zh": "從 <code>~/.claude/projects/**/*.jsonl</code> 依上次讀取的位移增量讀取。一則助理訊息會橫跨多行 JSONL 並重複相同的用量物件，因此依訊息 id 去除重複。"}],
+          [{"en": "Privacy", "fr": "Vie privée", "zh": "隱私"},
+           {"en": "Everything stays on your Mac. The only network call is the one above, to Anthropic, with your own token. No telemetry, no analytics, no third party. Transcripts are read, never sent.",
+            "fr": "Tout reste sur votre Mac. Le seul appel réseau est celui ci-dessus, vers Anthropic, avec votre propre jeton. Aucune télémétrie, aucune analytique, aucun tiers. Les transcripts sont lus, jamais envoyés.",
+            "zh": "一切留在你的 Mac 上。唯一的網路請求就是上述這一個，送往 Anthropic，使用你自己的權杖。沒有遙測、沒有分析、沒有第三方。記錄只被讀取，絕不外傳。"}]
+        ]}
+     ]},
+    {"id": "install",
+     "h": {"en": "Install", "fr": "Installation", "zh": "安裝"},
+     "p": {"en": "The <a href=\"https://github.com/vincentlauriat/ClaudeMenu/releases/download/v1.0.0/ClaudeMenu-1.0.0.dmg\">v1.0.0 disk image</a> is signed with a Developer ID and notarised by Apple, so it opens without a warning. From there the app updates itself. You can also build it in three commands.",
+           "fr": "L'<a href=\"https://github.com/vincentlauriat/ClaudeMenu/releases/download/v1.0.0/ClaudeMenu-1.0.0.dmg\">image disque v1.0.0</a> est signée avec un Developer ID et notarisée par Apple, donc elle s'ouvre sans avertissement. Ensuite l'app se met à jour toute seule. Vous pouvez aussi la compiler en trois commandes.",
+           "zh": "「<a href=\"https://github.com/vincentlauriat/ClaudeMenu/releases/download/v1.0.0/ClaudeMenu-1.0.0.dmg\">v1.0.0 磁碟映像檔</a>」已使用 Developer ID 簽署並通過 Apple 公證，開啟時不會出現警告。之後應用程式會自動更新。你也可以用三道指令自行建置。"},
+     "blocks": [
+       {"type": "pre", "code": "brew install xcodegen\ngit clone https://github.com/vincentlauriat/ClaudeMenu.git\ncd ClaudeMenu && xcodegen generate\n\nxcodebuild -project ClaudeMenu.xcodeproj -scheme ClaudeMenu \\\n  -configuration Debug -derivedDataPath build \\\n  CODE_SIGNING_ALLOWED=NO build\n\nopen build/Build/Products/Debug/ClaudeMenu.app"},
+       {"type": "p", "t": {
+         "en": "<b>Requirements.</b> macOS 14 or later, Xcode 15 or later, and Claude Code signed in. The gauge needs a Pro or Max subscription; without one the token counts still work. The app has no Dock icon — look for the percentage in the menu bar, and check behind the collapse chevron if your menu bar is full.",
+         "fr": "<b>Prérequis.</b> macOS 14 ou ultérieur, Xcode 15 ou ultérieur, et Claude Code connecté. La jauge demande un abonnement Pro ou Max ; sans lui, le comptage des tokens fonctionne quand même. L'app n'a pas d'icône dans le Dock — cherchez le pourcentage dans la barre de menus, et regardez derrière le chevron de repli si elle est pleine.",
+         "zh": "<b>需求。</b>macOS 14 以上、Xcode 15 以上，並已登入 Claude Code。計量需要 Pro 或 Max 訂閱；沒有訂閱時 token 計數仍可運作。本程式不會出現在 Dock——請在選單列尋找百分比；若選單列已滿，請檢查收合箭號後方。"}}
+     ]}
+  ],
+  "close": {"h": {"en": "Download, or build it yourself", "fr": "Téléchargez, ou compilez vous-même", "zh": "下載，或自行建置"},
+            "actions": [
+              {"primary": true, "href": "https://github.com/vincentlauriat/ClaudeMenu/releases/download/v1.0.0/ClaudeMenu-1.0.0.dmg", "label": {"en": "Download for macOS", "fr": "Télécharger pour macOS", "zh": "下載 macOS 版"}},
+              {"href": "https://github.com/vincentlauriat/ClaudeMenu", "label": {"en": "View on GitHub", "fr": "Voir sur GitHub", "zh": "在 GitHub 上檢視"}}
+            ]},
+  "colophon": {"notes": ["<a href=\"https://lauriat.fr/outils/claudemenu/\">lauriat.fr</a>"]}
+}
